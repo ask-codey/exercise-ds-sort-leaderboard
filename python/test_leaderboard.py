@@ -1,5 +1,7 @@
 # The tests for your three functions. You don't need to change this file.
 # Each message says what was expected, so a failing test tells you what to look at.
+import time
+
 from leaderboard import Player, add_to_board, insertion_sort, selection_sort
 
 RESULTS = [Player("PixelPilot", 2400), Player("NovaByte", 3150), Player("QuietStorm", 1980), Player("LemonDash", 2875), Player("RetroFox", 3400), Player("ByteKnight", 2210)]
@@ -61,3 +63,16 @@ def test_add_to_board_puts_a_tie_after_the_players_already_there():
     assert add_to_board(board, Player("MintyFresh", 3150)) == [Player("RetroFox", 3400), Player("NovaByte", 3150), Player("MintyFresh", 3150), Player("LemonDash", 2875)], \
         "Not yet: MintyFresh ties NovaByte on 3150, so goes after NovaByte, who got there first."
     assert board == [Player("RetroFox", 3400), Player("NovaByte", 3150), Player("LemonDash", 2875)], "Not yet: give back a new board, and leave the old one as it was."
+
+
+def test_a_thousand_late_scores_on_a_board_of_ten_thousand_take_under_two_seconds():
+    board = [Player(f"Player {i}", 50000 - i * 5) for i in range(10000)]
+    started = time.perf_counter()
+    for j in range(1000):
+        board = add_to_board(board, Player(f"Late {j}", j * 7919 % 50000))
+        assert time.perf_counter() - started < 2, \
+            f"Not yet: the ticket allows 2 seconds for 1,000 late scores on a board of 10,000, and {j + 1} scores took longer. One slide is at most 11,000 steps; sorting the whole board again is about 50 million comparisons."
+    assert len(board) == 11000, "Not yet: after 1,000 late scores, the board should hold 11,000 players."
+    for i in range(len(board) - 1):
+        assert board[i].points >= board[i + 1].points, \
+            f"Not yet: the board must stay sorted, most points first, but {board[i].name} ({board[i].points}) comes just before {board[i + 1].name} ({board[i + 1].points})."

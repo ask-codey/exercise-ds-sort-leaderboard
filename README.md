@@ -2,13 +2,24 @@
 
 Exercise code for the lesson **Exercise: Sort the Leaderboard** in the course *Data Structures and Big-O, Demystified* on [ask-codey.com](https://www.ask-codey.com).
 
-A game's time trial has finished, and the results are in the order the players crossed the line. You'll put the leaderboard in order, most points first, with both of the chapter's sorts, then slide a late finisher into place without sorting everything again. There are three functions to finish:
+## The ticket
 
-- `selectionSort` (`SelectionSort` in C#, `selection_sort` in Python): the players sorted by points, highest first, with selection sort
-- `insertionSort` (`InsertionSort`, `insertion_sort`): the same board, with insertion sort
-- `addToBoard` (`AddToBoard`, `add_to_board`): a sorted board with one new player slid into their place
+> **From:** the lead developer, a racing game
+>
+> The time-trial board has 10,000 players, and a late score arrives every few seconds. Today the server adds it to the end and sorts the whole board again, and on a busy evening the board falls minutes behind.
+>
+> 1. **A late score goes straight into its place** on the board that's already sorted, most points first. A tie goes after the players already on that score: they got there first.
+> 2. **1,000 late scores on a board of 10,000** are placed in under 2 seconds.
+> 3. **We still sort a whole race's results** when it ends, in finishing order to start with. We want two hand-written ways to compare, without the built-in sort: the "find the best, swap it to the front" way the old board used, and the "slide each one into place" way.
+> 4. **Nobody's list is changed under them:** every function gives back a new list.
 
-Write the sorts yourself: don't call your language's built-in sort.
+Three functions are yours to finish:
+
+- `addToBoard` (`AddToBoard` in C#, `add_to_board` in Python): a sorted board with one late player slid into their place
+- `selectionSort` (`SelectionSort`, `selection_sort`): a race's results, most points first, found best-first and swapped to the front
+- `insertionSort` (`InsertionSort`, `insertion_sort`): the same board, each player slid left into place
+
+Nine tests check them, ending with the ticket's busy evening: 1,000 late scores on a board of 10,000, in under 2 seconds.
 
 ## Pick your language
 
@@ -78,12 +89,30 @@ npm test
 
 At first every test fails: that is expected. Each function you finish turns its tests green. A failing test's message starts with **Not yet:** and says what it expected.
 
-## Tips
 
+<details>
+<summary>Stuck?</summary>
+
+- **Where to look:** the "find the best, swap it to the front" sort is *Putting the Leaderboard in Order: Selection Sort*; the "slide each one into place" sort is *One New Score on a Sorted Leaderboard: Insertion Sort*.
 - **Sort a copy.** Make a new list from the one you're given, sort that, and return it. The tests check that the results keep their own order.
-- **Most points first** means the lessons' comparisons turn around: selection sort looks for the most points, and insertion sort slides a player left past every player with fewer points.
-- **`addToBoard` is one insertion-sort pass.** Put the newcomer at the end of a copy of the board and slide them left.
+- **Most points first** turns the lessons' comparisons around: selection sort looks for the **most** points left, and insertion sort slides a player left past every player with **fewer** points.
+- **`addToBoard` is one insertion-sort pass.** Put the newcomer at the end of a copy of the board and slide them left. Don't sort the whole board again: the busy-evening test stops after 2 seconds.
 - **A tie stays behind.** Slide only past players with fewer points, not the same number: the player who got there first keeps their place.
+
+</details>
+
+<details>
+<summary>Why Should I Choose This?</summary>
+
+Open this once your tests are green. The busy evening is 1,000 late scores on a board of 10,000.
+
+- **Add the score and sort again with selection sort:** about 50 million comparisons for each score, O(n²) every time, 50 billion for the evening. Measured with this test, the 2 seconds ran out with only 1 of the 1,000 scores placed in Python, 6 in C# and about 30 in Java, JavaScript and TypeScript.
+- **Sort only when someone opens the board:** the same cost, paid later, and a busy board is always open.
+- **Slide the new score into place:** at most 11,000 steps a score, O(n), and usually about half that. The whole evening took 0.26 seconds in Python and less in the other languages.
+- **And insertion sort?** On a sorted board with one score added at the end, insertion sort does exactly that one slide, so sorting again with *it* would pass too. The board is almost sorted, which is insertion sort's best case.
+- **What it gives up:** the slide is still O(n). On a board of millions with scores pouring in every second, the moving adds up, and the trees and heaps of Module 6 keep things in order without sliding.
+
+</details>
 
 ## Hand it in
 

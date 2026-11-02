@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Leaderboard;
 
 namespace Leaderboard.Tests;
@@ -91,5 +92,32 @@ public class SortingTests
         CollectionAssert.AreEqual(new List<Player> { new Player("RetroFox", 3400), new Player("NovaByte", 3150), new Player("MintyFresh", 3150), new Player("LemonDash", 2875) }, Sorting.AddToBoard(board, new Player("MintyFresh", 3150)),
             "Not yet: MintyFresh ties NovaByte on 3150, so goes after NovaByte, who got there first.");
         CollectionAssert.AreEqual(new List<Player> { new Player("RetroFox", 3400), new Player("NovaByte", 3150), new Player("LemonDash", 2875) }, board, "Not yet: give back a new board, and leave the old one as it was.");
+    }
+
+    [TestMethod]
+    public void AThousandLateScoresOnABoardOfTenThousandTakeUnderTwoSeconds()
+    {
+        List<Player> board = new List<Player>();
+        for (int i = 0; i < 10000; i++)
+        {
+            board.Add(new Player("Player " + i, 50000 - i * 5));
+        }
+        Stopwatch watch = Stopwatch.StartNew();
+        for (int j = 0; j < 1000; j++)
+        {
+            board = Sorting.AddToBoard(board, new Player("Late " + j, j * 7919 % 50000));
+            if (watch.Elapsed.TotalSeconds >= 2)
+            {
+                Assert.Fail("Not yet: the ticket allows 2 seconds for 1,000 late scores on a board of 10,000, and " + (j + 1) + " scores took longer. One slide is at most 11,000 steps; sorting the whole board again is about 50 million comparisons.");
+            }
+        }
+        Assert.AreEqual(11000, board.Count, "Not yet: after 1,000 late scores, the board should hold 11,000 players.");
+        for (int i = 0; i < board.Count - 1; i++)
+        {
+            if (board[i].Points < board[i + 1].Points)
+            {
+                Assert.Fail("Not yet: the board must stay sorted, most points first, but " + board[i].Name + " (" + board[i].Points + ") comes just before " + board[i + 1].Name + " (" + board[i + 1].Points + ").");
+            }
+        }
     }
 }

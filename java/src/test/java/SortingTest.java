@@ -1,4 +1,5 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,5 +80,26 @@ class SortingTest {
         assertEquals(List.of(new Player("RetroFox", 3400), new Player("NovaByte", 3150), new Player("MintyFresh", 3150), new Player("LemonDash", 2875)), Sorting.addToBoard(board, new Player("MintyFresh", 3150)),
             "Not yet: MintyFresh ties NovaByte on 3150, so goes after NovaByte, who got there first.");
         assertEquals(List.of(new Player("RetroFox", 3400), new Player("NovaByte", 3150), new Player("LemonDash", 2875)), board, "Not yet: give back a new board, and leave the old one as it was.");
+    }
+
+    @Test
+    void aThousandLateScoresOnABoardOfTenThousandTakeUnderTwoSeconds() {
+        List<Player> board = new ArrayList<>();
+        for (int i = 0; i < 10000; i++) {
+            board.add(new Player("Player " + i, 50000 - i * 5));
+        }
+        long started = System.nanoTime();
+        for (int j = 0; j < 1000; j++) {
+            board = Sorting.addToBoard(board, new Player("Late " + j, j * 7919 % 50000));
+            if (System.nanoTime() - started >= 2_000_000_000L) {
+                fail("Not yet: the ticket allows 2 seconds for 1,000 late scores on a board of 10,000, and " + (j + 1) + " scores took longer. One slide is at most 11,000 steps; sorting the whole board again is about 50 million comparisons.");
+            }
+        }
+        assertEquals(11000, board.size(), "Not yet: after 1,000 late scores, the board should hold 11,000 players.");
+        for (int i = 0; i < board.size() - 1; i++) {
+            if (board.get(i).points() < board.get(i + 1).points()) {
+                fail("Not yet: the board must stay sorted, most points first, but " + board.get(i).name() + " (" + board.get(i).points() + ") comes just before " + board.get(i + 1).name() + " (" + board.get(i + 1).points() + ").");
+            }
+        }
     }
 }

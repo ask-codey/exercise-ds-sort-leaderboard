@@ -67,3 +67,23 @@ test("add to board puts a tie after the players already there", () => {
     "Not yet: MintyFresh ties NovaByte on 3150, so goes after NovaByte, who got there first.");
   assert.deepEqual(board, [{ name: "RetroFox", points: 3400 }, { name: "NovaByte", points: 3150 }, { name: "LemonDash", points: 2875 }], "Not yet: give back a new board, and leave the old one as it was.");
 });
+
+test("a thousand late scores on a board of ten thousand take under two seconds", () => {
+  let board: Player[] = [];
+  for (let i = 0; i < 10000; i++) {
+    board.push({ name: `Player ${i}`, points: 50000 - i * 5 });
+  }
+  const started = performance.now();
+  for (let j = 0; j < 1000; j++) {
+    board = addToBoard(board, { name: `Late ${j}`, points: j * 7919 % 50000 });
+    if (performance.now() - started >= 2000) {
+      assert.fail(`Not yet: the ticket allows 2 seconds for 1,000 late scores on a board of 10,000, and ${j + 1} scores took longer. One slide is at most 11,000 steps; sorting the whole board again is about 50 million comparisons.`);
+    }
+  }
+  assert.equal(board.length, 11000, "Not yet: after 1,000 late scores, the board should hold 11,000 players.");
+  for (let i = 0; i < board.length - 1; i++) {
+    if (board[i]!.points < board[i + 1]!.points) {
+      assert.fail(`Not yet: the board must stay sorted, most points first, but ${board[i]!.name} (${board[i]!.points}) comes just before ${board[i + 1]!.name} (${board[i + 1]!.points}).`);
+    }
+  }
+});
